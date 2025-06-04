@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    container_name: flask_app
+    ports:
+      - "5000:5000"
+    environment:
+      - CASSANDRA_HOST=cassandra
+    depends_on:
+      - cassandra
+    networks:
+      - cassandra_net
+
+  cassandra:
+    image: cassandra:4.1
+    container_name: cassandra
+    ports:
+      - "9042:9042"
+    environment:
+      - CASSANDRA_CLUSTER_NAME=TestCluster
+      - CASSANDRA_SEEDS=cassandra
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    networks:
+      - cassandra_net
+
+  cassandra2:
+    image: cassandra:4.1
+    container_name: cassandra2
+    depends_on:
+      - cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=TestCluster
+      - CASSANDRA_SEEDS=cassandra
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra2
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    networks:
+      - cassandra_net
+
+  cassandra3:
+    image: cassandra:4.1
+    container_name: cassandra3
+    depends_on:
+      - cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=TestCluster
+      - CASSANDRA_SEEDS=cassandra
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra3
+      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+    networks:
+      - cassandra_net
+
+networks:
+  cassandra_net:
+    driver: bridge
