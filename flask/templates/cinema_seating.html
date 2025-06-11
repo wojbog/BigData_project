@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Seat Booking</title>
+    <title>Seat Booking System</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -47,7 +47,7 @@
         }
         .cinema-screen {
             width: 100%;
-            max-width: 1000px; /* Matches seat grid width (4 * 80px + padding/gap) */
+            max-width: 1000px;
             height: 80px;
             background-color: #222;
             color: white;
@@ -64,7 +64,7 @@
         }
         .seat-container {
             display: grid;
-            grid-template-columns: repeat(12, 60px); /* 4 seats per row */
+            grid-template-columns: repeat(12, 60px);
             gap: 10px;
             background-color: #fff;
             padding: 20px;
@@ -83,11 +83,11 @@
             transition: transform 0.2s, box-shadow 0.2s;
         }
         .booked {
-            background-color: #e74c3c; /* Red for booked */
+            background-color: #e74c3c;
             color: white;
         }
         .available {
-            background-color: #2ecc71; /* Green for available */
+            background-color: #2ecc71;
             color: white;
         }
         .seat:hover {
@@ -124,43 +124,38 @@
             }
         }
         #booking-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    background-color: #ffffff;
-    padding: 15px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-#booking-form label {
-    font-weight: bold;
-    color: #333;
-    margin-bottom: 5px;
-}
-
-#booking-form input {
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 14px;
-    background-color: #f9f9f9;
-}
-
-#booking-form button {
-    background-color: #3498db;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-#booking-form button:hover {
-    background-color: #2980b9;
-}
-
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        #booking-form label {
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        #booking-form input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 14px;
+            background-color: #f9f9f9;
+        }
+        #booking-form button {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        #booking-form button:hover {
+            background-color: #2980b9;
+        }
     </style>
 </head>
 <body>
@@ -176,11 +171,11 @@
                 Select a seat to view details
             </div>
             <div class="seat-container">
-            {% for seat in seats %}
-        <div class="seat {% if seat in selected_seats %}booked{% else %}available{% endif %}">
-            {{ seat }}
-        </div>
-            {% endfor %}
+                {% for seat in seats %}
+                <div class="seat {% if seat in selected_seats %}booked{% else %}available{% endif %}">
+                    {{ seat }}
+                </div>
+                {% endfor %}
             </div>
             <div class="legend">
                 <div class="legend-item">
@@ -194,82 +189,165 @@
             </div>
         </div>
         <div class="ad-sidebar">
-    <p><strong>Seat Booking Form</strong></p>
-    <form id="booking-form">
-        <label for="seat-id">Seat ID:</label><br>
-        <input type="text" id="seat-id" name="seat-id" readonly style="width: 100%; margin-bottom: 10px;"><br>
-        <label for="user-name">User Name:</label><br>
-        <input type="text" id="user-name" name="user-name" style="width: 100%; margin-bottom: 10px;"><br>
-        <button type="submit" style="width: 100%; padding: 8px;">Book/Update</button>
-    </form>
-</div>
+            <p><strong>Seat Booking Form</strong></p>
+            <form id="booking-form">
+                <label for="seat-id">Seat ID:</label><br>
+                <input type="text" id="seat-id" name="seat-id" readonly style="width: 100%; margin-bottom: 10px;"><br>
+                <label for="user-name">User Name:</label><br>
+                <input type="text" id="user-name" name="user-name" style="width: 100%; margin-bottom: 10px;"><br>
+                <button type="submit" style="width: 100%; padding: 8px;">Book/Update</button>
+            </form>
+            <div style="margin-top: 20px;">
+                <label>
+                    <input type="checkbox" id="cancel-mode"> Enable Cancellation Mode
+                </label>
+            </div>
+            <div id="cancel-list-container" style="margin-top: 10px; display: none;">
+                <p><strong>Seats selected for cancellation:</strong></p>
+                <ul id="cancel-list"></ul>
+                <button id="cancel-button" style="padding: 8px; background-color: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                    Cancel Selected Seats
+                </button>
+            </div>
+        </div>
     </div>
+    <script>
+        let reservations = {{ reservations|tojson }};
 
-   <script>
-    let reservations = {{ reservations|tojson }};
+        function showSeatDetails(seatId, isBooked) {
+            seatId = parseInt(seatId);
+            const screen = document.getElementById('cinema-screen');
+            const seatInput = document.getElementById('seat-id');
+            const userInput = document.getElementById('user-name');
 
-    function showSeatDetails(seatId, isBooked) {
-        seatId = parseInt(seatId);
-        const screen = document.getElementById('cinema-screen');
-        const seatInput = document.getElementById('seat-id');
-        const userInput = document.getElementById('user-name');
+            seatInput.value = seatId;
+            userInput.value = ''; // default to empty
 
-        seatInput.value = seatId;
-        userInput.value = '';  // default to empty
+            const reservation = reservations.find(r => parseInt(r['seat_id']) === seatId);
 
-        const reservation = reservations.find(r => parseInt(r['seat_id']) === seatId);
-
-        if (reservation) {
-            screen.textContent = `Seat ${seatId}: Booked - user: ${reservation['user']}`;
-            userInput.value = reservation['user'];
-        } else {
-            screen.textContent = `Seat ${seatId}: Available`;
+            if (reservation) {
+                screen.textContent = `Seat ${seatId}: Booked - user: ${reservation['user']}`;
+                userInput.value = reservation['user'];
+            } else {
+                screen.textContent = `Seat ${seatId}: Available`;
+            }
         }
+
+        document.querySelectorAll('.seat').forEach(seat => {
+            seat.addEventListener('click', function () {
+                const seatId = this.textContent.trim();
+                const isBooked = this.classList.contains('booked');
+                showSeatDetails(seatId, isBooked);
+            });
+        });
+
+        document.getElementById('booking-form').addEventListener('submit', function (e) {
+            e.preventDefault(); // prevent form from reloading the page
+
+            const seatId = document.getElementById('seat-id').value;
+            const user = document.getElementById('user-name').value;
+
+            const isBooked = reservations.some(r => parseInt(r['seat_id']) === parseInt(seatId));
+            const method = isBooked ? 'PUT' : 'POST';
+            const endpoint = '/book';
+
+            fetch(endpoint, {
+                method: method,
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    seat_id: parseInt(seatId),
+                    user: user
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert(`Seat ${seatId} ${isBooked ? 'updated' : 'booked'} successfully!`);
+                    location.reload();
+                } else {
+                    alert(`Failed to ${isBooked ? 'update' : 'book'} seat.`);
+                }
+            })
+            .catch(err => {
+                console.error('Request failed', err);
+                alert('An error occurred. Check the console.');
+            });
+        });
+
+    let cancelMode = false;
+    let cancelSeats = new Set();
+
+    document.getElementById('cancel-mode').addEventListener('change', function () {
+        cancelMode = this.checked;
+        cancelSeats.clear();
+        document.getElementById('cancel-list').innerHTML = '';
+        document.getElementById('cancel-list-container').style.display = cancelMode ? 'block' : 'none';
+    });
+
+    function updateCancelListDisplay() {
+        const list = document.getElementById('cancel-list');
+        list.innerHTML = '';
+        cancelSeats.forEach(seatId => {
+            const li = document.createElement('li');
+            li.textContent = `Seat ${seatId}`;
+            list.appendChild(li);
+        });
     }
 
     document.querySelectorAll('.seat').forEach(seat => {
         seat.addEventListener('click', function () {
             const seatId = this.textContent.trim();
             const isBooked = this.classList.contains('booked');
-            showSeatDetails(seatId, isBooked);
+
+            if (cancelMode) {
+                if (isBooked) {
+                    if (cancelSeats.has(seatId)) {
+                        cancelSeats.delete(seatId);
+                        this.style.outline = '';
+                    } else {
+                        cancelSeats.add(seatId);
+                        this.style.outline = '3px solid red';
+                    }
+                    updateCancelListDisplay();
+                } else {
+                    alert(`Seat ${seatId} is not booked and cannot be cancelled.`);
+                }
+            } else {
+                showSeatDetails(seatId, isBooked);
+            }
         });
     });
 
-    document.getElementById('booking-form').addEventListener('submit', function (e) {
-        e.preventDefault(); // prevent form from reloading the page
+    document.getElementById('cancel-button').addEventListener('click', function () {
+        if (cancelSeats.size === 0) {
+            alert('No seats selected for cancellation.');
+            return;
+        }
 
-        const seatId = document.getElementById('seat-id').value;
-        const user = document.getElementById('user-name').value;
-
-        // Determine if the seat is already booked
-        const isBooked = reservations.some(r => parseInt(r['seat_id']) === parseInt(seatId));
-
-        const method = isBooked ? 'PUT' : 'POST';
-        const endpoint = '/book';
-
-        fetch(endpoint, {
-            method: method,
+        fetch('/cancel', {
+            method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                seat_id: parseInt(seatId),
-                user: user
+                seat_id_tab: Array.from(cancelSeats).map(Number)
             })
         })
         .then(response => {
             if (response.ok) {
-                alert(`Seat ${seatId} ${isBooked ? 'updated' : 'booked'} successfully!`);
-                location.reload(); // reload to reflect change (or use JS to update DOM dynamically)
+                alert('Selected seats cancelled successfully!');
+                location.reload();
             } else {
-                alert(`Failed to ${isBooked ? 'update' : 'book'} seat.`);
+                console.error('Cancellation failed', response);
+                alert('Failed to cancel seats.');
             }
         })
         .catch(err => {
-            console.error('Request failed', err);
+            console.error('Cancellation request failed', err);
             alert('An error occurred. Check the console.');
         });
     });
-</script>
+    </script>
 </body>
 </html>

@@ -83,7 +83,7 @@ async def update_reservation():
 
 @reservation_bp.route("/", methods=["GET"])
 async def get_all_reservations():
-    seats = []  # Example booked seats
+    seats = []
     for i in range(1, 109):
         seats.append(i)
 
@@ -105,4 +105,52 @@ async def get_all_reservations():
             reservations=reservations,
         )
     except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+@reservation_bp.route("/cancel", methods=["POST"])
+async def cancel_reservation():
+    data = await request.get_json()
+    seat_id_tab = data.get("seat_id_tab")
+    print(seat_id_tab)
+    if not seat_id_tab:
+        return jsonify({"error": "seat_id_tav is required"}), 400
+
+    if not isinstance(seat_id_tab, list):
+        print("seat_id_tab is a list")
+        return (
+            jsonify({"error": "seat_id_tab must be a list"}),
+            400,
+        )
+    if len(seat_id_tab) < 1:
+        return jsonify({"error": "seat_id_tab size must be greater than 0"}), 400
+
+    for seat_id in seat_id_tab:
+        if not isinstance(seat_id, int):
+            return (
+                jsonify(
+                    {"error": "seat_id must be an integer and user must be a string"}
+                ),
+                400,
+            )
+        if seat_id < 0 or seat_id > 108:
+            return jsonify({"error": "seat_id must be between 0 and 108"}), 400
+
+    def cancel_reservation_async():
+        results = []
+        for seat_id in seat_id_tab:
+            query = "DELETE FROM reservation WHERE seat_id = %s IF EXISTS"
+            future = session.execute_async(query, (seat_id,))
+            results.append(future.result())
+        return results
+
+    try:
+        result = await asyncio.to_thread(cancel_reservation_async)
+        for res in result:
+            if not res.was_applied:
+                return jsonify({"error": "One or more reservations do not exist"}), 404
+
+        return jsonify({"message": "Reservation cancelled successfully"}), 200
+    except Exception as e:
+        print("Error in cancel_reservation:", str(e))
         return jsonify({"error": str(e)}), 500

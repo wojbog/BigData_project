@@ -21,6 +21,9 @@ def set_up():
     )
     session.set_keyspace(KEYSPACE)
 
+    session.execute("DROP TABLE IF EXISTS reservation")
+    session.execute("DROP TABLE IF EXISTS cancellation")
+
     session.execute(
         """
     CREATE TABLE IF NOT EXISTS reservation (
