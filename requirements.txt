@@ -1,2 +1,2 @@
-flask
+quart
 cassandra-driver

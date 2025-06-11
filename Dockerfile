@@ -13,8 +13,9 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy application code
-COPY .flask/ .
+COPY ./flask/ .
 
 # Expose port and start the app
+ENV FLASK_APP=app.py 
 EXPOSE 5000
-CMD ["python", "app.py"]
+CMD ["hypercorn", "app:app", "--bind", "0.0.0.0:5000", "--reload"]

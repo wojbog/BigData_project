@@ -4,14 +4,17 @@ services:
   web:
     build: .
     container_name: flask_app
+    environment:
+      - FLASK_ENV=development
     ports:
       - "5000:5000"
-    environment:
-      - CASSANDRA_HOST=cassandra
     depends_on:
       - cassandra
+    volumes:
+      - ./flask:/app  # Ensure local code directory is mounted correctly
     networks:
       - cassandra_net
+    restart: always
 
   cassandra:
     image: cassandra:4.1
@@ -19,10 +22,8 @@ services:
     ports:
       - "9042:9042"
     environment:
-      - CASSANDRA_CLUSTER_NAME=TestCluster
-      - CASSANDRA_SEEDS=cassandra
-      - CASSANDRA_BROADCAST_ADDRESS=cassandra
-      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - "MAX_HEAP_SIZE=1G"
+      - "HEAP_NEWSIZE=256M"
     networks:
       - cassandra_net
 
@@ -32,23 +33,10 @@ services:
     depends_on:
       - cassandra
     environment:
-      - CASSANDRA_CLUSTER_NAME=TestCluster
-      - CASSANDRA_SEEDS=cassandra
-      - CASSANDRA_BROADCAST_ADDRESS=cassandra2
-      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
-    networks:
-      - cassandra_net
-
-  cassandra3:
-    image: cassandra:4.1
-    container_name: cassandra3
-    depends_on:
-      - cassandra
-    environment:
-      - CASSANDRA_CLUSTER_NAME=TestCluster
-      - CASSANDRA_SEEDS=cassandra
-      - CASSANDRA_BROADCAST_ADDRESS=cassandra3
-      - CASSANDRA_ENDPOINT_SNITCH=GossipingPropertyFileSnitch
+      - "MAX_HEAP_SIZE=1G"
+      - "HEAP_NEWSIZE=256M"
+    ports:
+      - "9043:9042"
     networks:
       - cassandra_net
 
