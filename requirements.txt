@@ -1,2 +1,6 @@
 quart
 cassandra-driver
+pytest
+httpx
+pytest-asyncio
+aiohttp
