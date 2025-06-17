@@ -102,3 +102,5 @@ Cassandra’s write-optimized architecture provided high-speed inserts, and the 
 10. Conclusion:
 
 This project provided practical experience in building a scalable, web-based system using Big Data principles. By integrating Flask and Apache Cassandra, I gained insights into NoSQL data modeling, web development, and the interaction between frontend and backend systems.
+
+LInk to Github repository: [GitHub Repository](https://github.com/wojbog/BigData_project)
