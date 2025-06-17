@@ -42,6 +42,7 @@ class StressTestRunner:
                 json={"seat_id": seat_id, "user": user},
                 timeout=aiohttp.ClientTimeout(total=10)
             ) as response:
+                await asyncio.sleep(random.uniform(0.01, 0.1))
                 return {
                     "status": response.status,
                     "data": await response.json(),
@@ -49,6 +50,7 @@ class StressTestRunner:
                     "user": user,
                     "timestamp": time.time()
                 }
+
         except Exception as e:
             return {
                 "status": 0,
@@ -239,15 +241,13 @@ async def stress_test_3_seat_race():
         async with StressTestRunner() as runner:
             seat_results = []
             results = []
-            tasks = []
 
-            seats_to_book = list(range(1, 109))
             for seat_id in range(1, 109):
                 user = f"client_{client_id}"
                 result = await runner.make_reservation(seat_id, user)
                 seat_results.append(result)
 
-            
+                await asyncio.sleep(random.uniform(0.01, 0.05))
 
             
             for result in seat_results:
