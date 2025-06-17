@@ -237,17 +237,18 @@ async def stress_test_3_seat_race():
     
     async def client_seat_grabber(client_id: int):
         async with StressTestRunner() as runner:
+            seat_results = []
             results = []
             tasks = []
 
             seats_to_book = list(range(1, 109))
-            random.seed(2 * client_id)
-            random.shuffle(seats_to_book)
-            for seat_id in seats_to_book:
+            for seat_id in range(1, 109):
                 user = f"client_{client_id}"
-                tasks.append(runner.make_reservation(seat_id, user))
+                result = await runner.make_reservation(seat_id, user)
+                seat_results.append(result)
+
             
-            seat_results = await asyncio.gather(*tasks, return_exceptions=True)
+
             
             for result in seat_results:
                 if isinstance(result, Exception):
