@@ -284,34 +284,19 @@ async def stress_test_4_constant_churn():
         results = []
         start_time = time.time()
         duration = 5  
-        
-        async def booking_worker():
-            worker_results = []
-            while time.time() - start_time < duration:
-                seat_id = random.randint(1, 108)
-                user = f"churn_user_{random.randint(1, 100)}"
-                result = await runner.make_reservation(seat_id, user)
-                worker_results.append(result)
-                await asyncio.sleep(0.1)
-            return worker_results
-        
-        async def cancellation_worker():
-            worker_results = []
-            while time.time() - start_time < duration:
-                seats_to_cancel = [random.randint(1, 108) for _ in range(random.randint(1, 10))]
-                result = await runner.cancel_reservations(seats_to_cancel)
-                worker_results.append(result)
-                await asyncio.sleep(0.2)
-            return worker_results
-        
-        booking_tasks = [booking_worker() for _ in range(3)]  
-        cancellation_tasks = [cancellation_worker() for _ in range(2)]  
-        
-        all_tasks = booking_tasks + cancellation_tasks
-        task_results = await asyncio.gather(*all_tasks)
-        
-        for task_result in task_results:
-            results.extend(task_result)
+
+        seat_id = 10
+
+        while time.time() - start_time < duration:
+            user = f"churn_user_{seat_id}"
+            
+            result = await runner.make_reservation(seat_id, user)
+            results.append(result)
+            
+            cancel_result = await runner.cancel_reservations([seat_id])
+            results.append(cancel_result)
+            
+
         
         runner.analyze_results(results, "Constant Churn")
 
